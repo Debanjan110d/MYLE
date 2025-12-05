@@ -35,6 +35,9 @@ DEBUG = env_bool("DJANGO_DEBUG", True)
 allowed_hosts = os.environ.get("DJANGO_ALLOWED_HOSTS", "")
 ALLOWED_HOSTS = [host.strip() for host in allowed_hosts.split(",") if host.strip()] or ["localhost", "127.0.0.1"]
 
+csrf_trusted = os.environ.get("DJANGO_CSRF_TRUSTED_ORIGINS", "")
+CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in csrf_trusted.split(",") if origin.strip()]
+
 
 # Application definition
 
@@ -127,6 +130,8 @@ STATICFILES_DIRS = [
 ]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 # Media files (User uploads)
 MEDIA_URL = 'media/'

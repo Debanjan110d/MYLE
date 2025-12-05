@@ -281,5 +281,31 @@ This project is open source and available under the MIT License.
 ## Support
 
 For issues and questions, please check the Django documentation or create an issue in the project repository.
+
+## Deploying on Coolify (VPS)
+
+Coolify works well with the included `Dockerfile`. Quick setup:
+
+1. **Repository & build**
+   - In Coolify, create a new application, connect this repo, choose **Dockerfile** build pack.
+   - Base directory: `/` (repo root). Publish directory: leave empty. Exposed port: `8000`.
+2. **Environment variables** (add via Coolify UI)
+   - `DJANGO_SECRET_KEY` (required, keep it random and private)
+   - `DJANGO_DEBUG=False`
+   - `DJANGO_ALLOWED_HOSTS=your-domain.com,www.your-domain.com`
+   - `DJANGO_CSRF_TRUSTED_ORIGINS=https://your-domain.com,https://www.your-domain.com`
+   - Optional: `DATABASE_URL` (Postgres URL). If omitted, SQLite is used inside the container.
+3. **Persistent storage**
+   - Add volumes so data survives redeploys: mount `/app/db.sqlite3` and `/app/media` (if you expect uploads).
+4. **Build & run**
+   - The Dockerfile installs deps, collects static files, and sets `CMD` to `python manage.py migrate && gunicorn medicine_qr_app.wsgi:application --bind 0.0.0.0:8000`.
+   - No extra build/start commands needed in Coolify unless you want to override.
+5. **Domain**
+   - Point your domain at the Coolify-provided IP, set the domain in the app, and ensure it matches the `ALLOWED_HOSTS` and `CSRF_TRUSTED_ORIGINS` values.
+
+Troubleshooting tips:
+- If static files 404, ensure `collectstatic` ran (it runs in the Docker build) and that `DEBUG` is `False` with WhiteNoise enabled.
+- If you change domains, update `DJANGO_ALLOWED_HOSTS` and `DJANGO_CSRF_TRUSTED_ORIGINS` then redeploy.
+- For Postgres, set `DATABASE_URL` and ensure the database is reachable from the container.
 #
 

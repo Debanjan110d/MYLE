@@ -2,6 +2,7 @@
 Django>=5.1.0
 dj-database-url>=2.2
 whitenoise>=6.7
+gunicorn>=22.0
 
 # QR Code generation
 qrcode[pil]>=7.0
