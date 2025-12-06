@@ -27,6 +27,6 @@ ENV DJANGO_SETTINGS_MODULE=medicine_qr_app.settings \
 # Collect static assets at build time
 RUN python manage.py collectstatic --noinput
 
-EXPOSE 8000
-
+# Do not hardcode container port; Coolify will inject PORT
+# Start app: run migrations, then Gunicorn using env-driven config
 CMD ["sh", "-c", "python manage.py migrate && gunicorn -c gunicorn.conf.py medicine_qr_app.wsgi:application"]
