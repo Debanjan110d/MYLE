@@ -35,6 +35,11 @@ DEBUG = env_bool("DJANGO_DEBUG", True)
 allowed_hosts = os.environ.get("DJANGO_ALLOWED_HOSTS", "")
 ALLOWED_HOSTS = [host.strip() for host in allowed_hosts.split(",") if host.strip()] or ["localhost", "127.0.0.1"]
 
+# Always allow localhost/127.0.0.1 for internal health checks and platform probes
+for _host in ("localhost", "127.0.0.1"):
+    if _host not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(_host)
+
 csrf_trusted = os.environ.get("DJANGO_CSRF_TRUSTED_ORIGINS", "")
 CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in csrf_trusted.split(",") if origin.strip()]
 

@@ -19,18 +19,20 @@ This guide configures your Django app for production on Coolify using Nixpacks. 
 - Domains: Set your domain (e.g., `http://djangot.172.61.226.153.sslip.io`). Enable HTTPS later.
 
 ### Build Section
-- Install Command: `python -m pip install -r requirements.txt`
+- Install Command: leave empty (recommended). Nixpacks will run pip in its venv.
+  - If you must set it, use: `/opt/venv/bin/pip install -r requirements.txt`
 - Build Command: leave empty (Nixpacks detects Python project automatically)
 - Base Directory: `/`
 - Publish Directory: `/` (or leave empty)
 - Custom Docker Options: leave empty
 
 ### Start Command
-- Start Command: `gunicorn -c gunicorn.conf.py medicine_qr_app.wsgi:application`
+  - Type it manually; avoid pasting from Markdown (links can inject `[ ... ](...)` and break the command).
   - Port is not set here; Coolify injects `PORT`, which Gunicorn reads from `gunicorn.conf.py`.
 
-### Pre/Post Deployment Commands
-- Pre-deployment: `python manage.py migrate --noinput`
+ Pre-deployment: `python manage.py migrate --noinput`
+ Post-deployment: optional `python manage.py collectstatic --noinput`
+ Tip: type commands by hand so they stay plain text (no `[manage.py](...)` references).
 - Post-deployment: optional `python manage.py collectstatic --noinput` if not already run at build time
 
 ### Health Check
@@ -77,6 +79,11 @@ $env:PORT="9000"; waitress-serve --port $env:PORT --host 0.0.0.0 medicine_qr_app
 - No hardcoded port anywhere; Coolify’s `PORT` is used automatically.
 - WhiteNoise serves static files efficiently; `collectstatic` must be run before starting.
 - For managed DBs, prefer Coolify’s Postgres service and set `DATABASE_URL` accordingly.
+
+### Troubleshooting
+- Error: `/root/.nix-profile/bin/python: No module named pip`
+  - Cause: Overriding Install Command to `python -m pip ...` bypasses Nixpacks' venv.
+  - Fix: Clear the Install Command, or set it to `/opt/venv/bin/pip install -r requirements.txt`.
 
 ## Optional: Health Endpoint
 You can add a lightweight health route for better checks:
