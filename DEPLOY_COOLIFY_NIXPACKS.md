@@ -16,14 +16,27 @@ This guide configures your Django app for production on Coolify using Nixpacks. 
 ## Coolify Service Setup (Nixpacks)
 - Create Service: Choose Nixpacks → Python.
 - Repository: Connect this repo (`main` branch).
-- Start Command:
-  - `gunicorn -c gunicorn.conf.py medicine_qr_app.wsgi:application`
-- Build/Run Commands:
-  - PreStart (Install deps): `python -m pip install -r requirements.txt`
-  - PostBuild or PreStart (Static): `python manage.py collectstatic --noinput`
-  - PreStart (Migrations): `python manage.py migrate --noinput`
-- Port: Leave unset. Coolify injects `PORT`; Gunicorn reads it via `gunicorn.conf.py`.
-- Health Check: Path `/` or add `/healthz` (optional).
+- Domains: Set your domain (e.g., `http://djangot.172.61.226.153.sslip.io`). Enable HTTPS later.
+
+### Build Section
+- Install Command: `python -m pip install -r requirements.txt`
+- Build Command: leave empty (Nixpacks detects Python project automatically)
+- Base Directory: `/`
+- Publish Directory: `/` (or leave empty)
+- Custom Docker Options: leave empty
+
+### Start Command
+- Start Command: `gunicorn -c gunicorn.conf.py medicine_qr_app.wsgi:application`
+  - Port is not set here; Coolify injects `PORT`, which Gunicorn reads from `gunicorn.conf.py`.
+
+### Pre/Post Deployment Commands
+- Pre-deployment: `python manage.py migrate --noinput`
+- Post-deployment: optional `python manage.py collectstatic --noinput` if not already run at build time
+
+### Health Check
+- HTTP path: `/healthz`
+- Method: GET
+- Interval: 30s; Timeout: 5s; Healthy threshold: 2
 
 ## Environment Variables
 - `DJANGO_SECRET_KEY`: Strong unique value (required).
@@ -54,10 +67,10 @@ python manage.py migrate --noinput
 
 # On Windows, Gunicorn isn't supported (missing fcntl). Use Waitress:
 python -m pip install waitress
-$env:PORT="9000"; waitress-serve --port %PORT% --host 0.0.0.0 medicine_qr_app.wsgi:application
+$env:PORT="9000"; waitress-serve --port $env:PORT --host 0.0.0.0 medicine_qr_app.wsgi:application
 
 # On Linux/macOS, you can use Gunicorn:
-# $env:PORT="9000"; gunicorn -c gunicorn.conf.py medicine_qr_app.wsgi:application
+# PORT=9000 gunicorn -c gunicorn.conf.py medicine_qr_app.wsgi:application
 ```
 
 ## Notes
