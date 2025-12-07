@@ -5,6 +5,7 @@ from django.http import HttpResponse, JsonResponse
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
+from django.urls import reverse
 from .forms import MedicineForm
 from .models import Medicine
 import qrcode
@@ -146,6 +147,12 @@ def home(request):
     recent_medicines = Medicine.objects.all()[:5]
     return render(request, 'medicines/home.html', {'recent_medicines': recent_medicines})
 
+def build_medicine_url(request, medicine):
+    """Absolute URL for public medicine details, using the current host/scheme."""
+    return request.build_absolute_uri(
+        reverse('medicines:medicine_details_public', args=[medicine.batch_number])
+    )
+
 
 @login_required
 def create_medicine_qr(request):
@@ -167,7 +174,7 @@ def create_medicine_qr(request):
 def qr_code_display(request, pk):
     """Display the QR code for a specific medicine."""
     medicine = get_object_or_404(Medicine, pk=pk)
-    qr_data = medicine.get_qr_data()
+    qr_data = build_medicine_url(request, medicine)
 
     # Generate QR code
     qr = qrcode.QRCode(
@@ -222,7 +229,7 @@ def delete_all_medicines(request):
 def download_qr_code(request, pk):
     """Download QR code as PNG file."""
     medicine = get_object_or_404(Medicine, pk=pk)
-    qr_data = medicine.get_qr_data()
+    qr_data = build_medicine_url(request, medicine)
 
     # Generate QR code
     qr = qrcode.QRCode(
